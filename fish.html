@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>共テリスニング下読み特訓</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f4f4f9; color: #333; }
+        #timer { position: fixed; top: 10px; right: 10px; font-size: 24px; color: white; background: red; padding: 10px 20px; border-radius: 50px; font-weight: bold; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px; }
+        .option { display: block; width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 8px; cursor: pointer; text-align: left; background: #fff; font-size: 16px; transition: 0.2s; }
+        .option:hover { background: #f0f0f0; border-color: #ccc; }
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; font-weight: bold; display: none; }
+        .correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button#next-btn, button#restart-btn { margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; }
+        #final-screen { text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="timer">01:00</div>
+
+<div id="quiz-container">
+    <div id="question-box" class="card">
+        <h3 id="q-title"></h3>
+        <p id="q-text"></p>
+        <div id="options-area"></div>
+        <div id="feedback-area" class="feedback"></div>
+        <button id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+    </div>
+</div>
+
+<div id="final-screen" class="card">
+    <h2>トレーニング終了！</h2>
+    <p>下読みお疲れ様でした。音声を聞く準備はできましたか？</p>
+    <button id="restart-btn" onclick="location.reload()" style="display:inline-block;">もう一度挑戦する</button>
+</div>
+
+<script>
+    const questions = [
+        {
+            title: "問1：ワークシートの全体像",
+            text: "下読み段階で推測できることとして【適切でないもの】を1つ選びなさい。",
+            options: [
+                "① 海水魚を、海のない内陸国で育てる方法である。",
+                "② 従来の養殖よりも魚の成長が早い可能性がある。",
+                "③ 魚の健康状態についての言及がある。",
+                "④ この新しい水は、植物の栽培には使えない。"
+            ],
+            ans: 3, // 0から数えて4番目
+            comment: "正解は④です！Advantages（利点）の欄にplant farmingの記述があるため、『使えない』のではなく『役立つ』内容が流れると予測できます。"
+        },
+        {
+            title: "問2：内容の予測比較",
+            text: "構成から、音声の内容について予測できることはどれですか？",
+            options: [
+                "A. 従来の海水養殖は、海岸に近い場所でしか行えないという限界がある。",
+                "B. 従来の淡水養殖が世界中で最も効率的であるという話。",
+                "C. 新しい水を使っても、魚の成長速度は従来と変わらないという話。"
+            ],
+            ans: 0,
+            comment: "正解はAです！新技術が『内陸（landlocked）』で可能という点は、従来の『場所の制約』を克服したことを示唆しています。"
+        }
+    ];
+
+    let currentIdx = 0;
+    let timeLeft = 60;
+
+    // タイマー開始
+    const timerEl = document.getElementById('timer');
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        let sec = timeLeft < 10 ? "0" + timeLeft : timeLeft;
+        timerEl.innerText = `00:${sec}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert("タイムアップ！");
+        }
+    }, 1000);
+
+    function showQuestion() {
+        const q = questions[currentIdx];
+        document.getElementById('q-title').innerText = q.title;
+        document.getElementById('q-text').innerText = q.text;
+        const area = document.getElementById('options-area');
+        area.innerHTML = "";
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = "option";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(i);
+            area.appendChild(btn);
+        });
+        document.getElementById('feedback-area').style.display = "none";
+        document.getElementById('next-btn').style.display = "none";
+    }
+
+    function checkAnswer(selected) {
+        const q = questions[currentIdx];
+        const feedback = document.getElementById('feedback-area');
+        const options = document.getElementsByClassName('option');
+        
+        // 全ボタンを無効化
+        for(let opt of options) opt.style.pointerEvents = "none";
+
+        feedback.style.display = "block";
+        if (selected === q.ans) {
+            feedback.innerText = "○ 正解！ " + q.comment;
+            feedback.className = "feedback correct";
+        } else {
+            feedback.innerText = "× 不正解... " + q.comment;
+            feedback.className = "feedback wrong";
+        }
+        document.getElementById('next-btn').style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < questions.length) {
+            showQuestion();
+        } else {
+            document.getElementById('quiz-container').style.display = "none";
+            document.getElementById('final-screen').style.display = "block";
+            clearInterval(timerInterval);
+        }
+    }
+
+    // 初回表示
+    showQuestion();
+</script>
+
+</body>
+</html>
